@@ -18,11 +18,11 @@ route.get("/register-page", (req, res) => {
 route.get("/forgot-password-page", (req, res) => {
 	res.render("forgotPasswordPage");
 });
-route.get("/activation-page/:activation_token?", authMiddleware, (req, res) => {
+route.get("/activation-page/:activation_token?", activation, (req, res) => {
 	const activation_token = req.params.activation_token;
-	res.render("activationPage", {activation_token});
+	res.render("activationPage", { activation_token });
 });
-route.get("/reset-password-page/:reset_pw_token?", authMiddleware, (req, res) => {
+route.get("/reset-password-page/:reset_pw_token?", (req, res) => {
 	const reset_pw_token = req.params.reset_pw_token;
 	res.render("resetPasswordPage", { reset_pw_token });
 });
@@ -35,8 +35,7 @@ route.get("/error-page", (req, res) => {
 
 route.post("/sign-up", register);
 route.post("/sign-in", login);
-route.post("/activation", activation)
 route.post("/forgot-password", forgotPassword);
-route.post("/reset-password/:reset_pw_token?", authMiddleware, resetPassword);
+route.post("/reset-password/:reset_pw_token?", resetPassword);
 
 module.exports = route;

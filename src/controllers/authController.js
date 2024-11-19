@@ -14,7 +14,6 @@ const {
 	newActivationTokenService,
 	newResetPasswordTokenService,
 } = require("../services/authService");
-const SALT = parseInt(process.env.SALT, 10);
 const { isGmail, isPasswordValid } = require("../utils/validator");
 
 const register = async (req, res, next) => {
@@ -57,6 +56,10 @@ const register = async (req, res, next) => {
 
 			if (newActivationToken) {
 				sendEmailActivationService(newActivationToken);
+				req.io.emit(
+					"notification",
+					"Activate your Account first! Please Check Your Email"
+				);
 				res.redirect("login-page");
 			}
 		}
@@ -72,7 +75,11 @@ const register = async (req, res, next) => {
 
 			if (newUser) {
 				sendEmailActivationService(newUser);
-				res.redirect("login-page");
+				req.io.emit(
+					"notification",
+					"Account Created Successfuly! Please Check Your Email"
+				);
+				// res.redirect("login-page");
 			}
 		}
 	} catch (error) {
@@ -162,20 +169,6 @@ const forgotPassword = async (req, res, next) => {
 	try {
 		const { email } = req.body;
 
-		const user = await prisma.user.findUnique({ where: { email: email } });
-
-		if (!user) {
-			const error = new Error("User Not Found!!!");
-			error.statusCode = 404;
-			throw error;
-		}
-		if (!user.activated) {
-			const error = new Error(
-				"Account is not activated. Please check your email to activate your account!!!"
-			);
-			error.statusCode = 400;
-			throw error;
-		}
 		if (!email) {
 			const error = new Error("Make Sure to insert your email!!!");
 			error.statusCode = 400;
@@ -191,26 +184,57 @@ const forgotPassword = async (req, res, next) => {
 			where: { email: email },
 		});
 
-		if (checkEmail && checkEmail.reset_pw_token !== "") {
+		if (!checkEmail) {
+			console.log("here1");
+			const error = new Error("Email Not Found!!!");
+			error.statusCode = 404;
+			throw error;
+		}
+		if (
+			checkEmail &&
+			checkEmail.reset_pw_token === "" &&
+			checkEmail.activated === false
+		) {
+			const error = new Error(
+				"Account is not activated. Please check your email to activate your account!!!"
+			);
+			error.statusCode = 400;
+			throw error;
+		}
+		if (
+			checkEmail &&
+			checkEmail.reset_pw_token !== "" &&
+			checkEmail.activated === true
+		) {
+			console.log("here3");
 			const newResetToken = await newResetPasswordTokenService(
 				checkEmail
 			);
 
 			if (newResetToken) {
 				sendEmailForgotPasswordService(newResetToken);
+				req.io.emit(
+					"notification",
+					"Email For Reset Password Has been Send! Please Check Your Email"
+				);
 				res.redirect("login-page");
 			}
 		}
-		if (!checkEmail) {
-			const error = new Error("Email Not Found!!!");
-			error.statusCode = 404;
-			throw error;
-		}
-		if (checkEmail && checkEmail.reset_pw_token === "") {
+		if (
+			checkEmail &&
+			checkEmail.reset_pw_token === "" &&
+			checkEmail.activated === true
+		) {
+			console.log("here4");
 			const getPasswordToken = await forgotPasswordService(req.body);
+			console.log(getPasswordToken);
 
 			if (getPasswordToken) {
 				sendEmailForgotPasswordService(getPasswordToken);
+				req.io.emit(
+					"notification",
+					"Email For Reset Password Has been Send! Please Check Your Email"
+				);
 				res.redirect("login-page");
 			}
 		}
@@ -248,6 +272,7 @@ const resetPassword = async (req, res, next) => {
 		const resetPassword = await resetPasswordService(jwtToken, password);
 
 		if (resetPassword) {
+			req.io.emit("notification", "Your Password Has been Changed!");
 			res.redirect("http://localhost:9090/api/v1/login-page");
 		}
 	} catch (error) {
