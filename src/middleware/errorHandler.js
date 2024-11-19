@@ -1,13 +1,11 @@
+const Sentry = require("../config/sentry");
+
 const errorHandler = (error, req, res, next) => {
-	Sentry.captureException(err);
+	Sentry.captureException(error);
 
-	const statusCode = error.statusCode || 500;
-	const message = error.message || "There's Something Wrong with The Server!";
-
-	res.status(statusCode).json({
-		status: "Failed",
-		message: message,
-	});
+	const message = error.message;
+	
+	req.io.emit('notification', message)
 };
 
 module.exports = errorHandler;
