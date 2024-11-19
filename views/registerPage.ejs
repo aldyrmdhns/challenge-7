@@ -10,7 +10,12 @@
 <body>
     <h1> Register Page </h1>
 
-    <form action="/sign-in" method="post">
+    <h3> ------------------- </h3>
+    <div id="notification"></div>
+    <h3> ------------------- </h3>
+    
+
+    <form action="/api/v1/sign-up" method="post">
         <div>
             <label for="email">Email : </label>
             <input type="email" name="email" id="email" placeholder="your-email@gmail.com">
@@ -20,14 +25,30 @@
             <input type="password" name="password" id="password" placeholder="enter your password here">
         </div>
         <div>
-            <label for="password">Confirm Password : </label>
-            <input type="c-password" name="c-password" id="c-password" placeholder="enter your password again">
+            <label for="cpassword">Confirm Password : </label>
+            <input type="password" name="cpassword" id="cpassword" placeholder="enter your password again">
         </div>
 
-        <input type="submit" value="register">
+        <input id="submit" type="submit" value="register">
     </form>
 
-    <p>already have an account? <a href="login-page"> Login Here! </a> </p>
+    <p>already have an account? <a href="/api/v1/login-page"> Login Here! </a> </p>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        socket.on('notification', data => {
+            const divIdNotif = document.getElementById('notification');
+            const createNotif = document.createElement('p');
+
+            divIdNotif.innerHTML = '';
+
+            createNotif.innerText = data;
+            divIdNotif.appendChild(createNotif);
+        })
+
+    </script>
 </body>
 
 </html>
