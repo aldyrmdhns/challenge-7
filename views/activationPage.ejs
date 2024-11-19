@@ -8,9 +8,19 @@
 </head>
 
 <body>
-    <h1> Account Has Been Activated!!!</h1>
-    <h3> Click The Button To Go To The Login Page!!!</h3>
-    <a href="/api/v1/login-page"><button> Login Here! </button></a>
+    <h1>Account Has Been Activated!!!</h1>
+    <h3>Click The Button To Go To The Login Page!!!</h3>
+    <a href="/api/v1/login-page"><button id="btn-redirect">Login Here!</button></a>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+
+        const btnRedirect = document.getElementById("btn-redirect");
+        btnRedirect.addEventListener("click", (e) => {
+            e.preventDefault();
+        });
+    </script>
 </body>
 
 </html>

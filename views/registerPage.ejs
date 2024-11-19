@@ -13,7 +13,7 @@
     <h3> ------------------- </h3>
     <div id="notification"></div>
     <h3> ------------------- </h3>
-    
+
 
     <form action="/api/v1/sign-up" method="post">
         <div>
@@ -38,16 +38,34 @@
     <script>
         let socket = io();
 
-        socket.on('notification', data => {
-            const divIdNotif = document.getElementById('notification');
-            const createNotif = document.createElement('p');
+        socket.on("notification", (data) => {
+            localStorage.setItem("notification", data);
+            displayNotification(data);
+        });
 
-            divIdNotif.innerHTML = '';
+        const storedNotification = localStorage.getItem("notification");
+        if (storedNotification) {
+            displayNotification(storedNotification);
+            localStorage.removeItem("notification");
+        }
 
-            createNotif.innerText = data;
-            divIdNotif.appendChild(createNotif);
-        })
+        function displayNotification(message) {
+            const divIdNotif = document.getElementById("notification");
+            if (divIdNotif) {
+                divIdNotif.innerHTML = "";
+                const createNotif = document.createElement("p");
+                createNotif.innerText = message;
+                divIdNotif.appendChild(createNotif);
+            }
+        }
 
+        const loginForm = document.getElementById("loginForm");
+        if (loginForm) {
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                console.log("Form submitted!");
+            });
+        }
     </script>
 </body>
 

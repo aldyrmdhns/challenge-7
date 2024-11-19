@@ -10,11 +10,11 @@
 <body>
     <h1>Login Page</h1>
 
-    <h3> ------------------- </h3>
+    <h3>-------------------</h3>
     <div id="notification"></div>
-    <h3> ------------------- </h3>
+    <h3>-------------------</h3>
 
-    <form action="/api/v1/sign-in" method="post">
+    <form id="loginForm" action="/api/v1/sign-in" method="post">
         <div>
             <label for="email">Email : </label>
             <input type="email" name="email" id="email" placeholder="your-email@gmail.com" />
@@ -28,7 +28,8 @@
     </form>
 
     <p>
-        Don't have an Account? <a href="/api/v1/register-page"> Register Here! </a>
+        Don't have an Account?
+        <a href="/api/v1/register-page"> Register Here! </a>
     </p>
     <a href="/api/v1/forgot-password-page">Forgot Password</a>
 
@@ -36,15 +37,33 @@
     <script>
         let socket = io();
 
-        socket.on('notification', data => {
-            const divIdNotif = document.getElementById('notification');
-            const createNotif = document.createElement('p');
+        socket.on("notification", (data) => {
+            localStorage.setItem("notification", data);
+            displayNotification(data);
+        });
 
-            divIdNotif.innerHTML = '';
+        const storedNotification = localStorage.getItem("notification");
+        if (storedNotification) {
+            displayNotification(storedNotification);
+            localStorage.removeItem("notification");
+        }
 
-            createNotif.innerText = data;
-            divIdNotif.appendChild(createNotif);
-        })
+        function displayNotification(message) {
+            const divIdNotif = document.getElementById("notification");
+            if (divIdNotif) {
+                divIdNotif.innerHTML = "";
+                const createNotif = document.createElement("p");
+                createNotif.innerText = message;
+                divIdNotif.appendChild(createNotif);
+            }
+        }
+
+        const loginForm = document.getElementById("loginForm");
+        if (loginForm) {
+            loginForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+            });
+        }
     </script>
 </body>
 

@@ -28,7 +28,7 @@ const registerService = async (data) => {
 
 		return newUser;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
@@ -64,7 +64,7 @@ const activationService = async (token) => {
 
 		return activation;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
@@ -85,7 +85,7 @@ const newActivationTokenService = async (data) => {
 
 		return updateToken;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
@@ -94,7 +94,7 @@ const loginService = async (data) => {
 		const { email, password } = data;
 
 		const user = await prisma.user.findUnique({ where: { email: email } });
-	
+
 		const accessToken = jwt.sign(
 			{ userId: user.id, email: user.email },
 			process.env.JWT_SECRET,
@@ -104,10 +104,7 @@ const loginService = async (data) => {
 		console.log(accessToken);
 		return { accessToken };
 	} catch (error) {
-		console.log("no here");
-		console.log(error.message, '-> from service');
-		
-		console.log(error);
+		return error;
 	}
 };
 
@@ -116,7 +113,23 @@ const forgotPasswordService = async (data) => {
 		let { email } = data;
 
 		const user = await prisma.user.findUnique({ where: { email: email } });
+		console.log("here iam");
 
+		if (!user) {
+			const error = new Error("User Not Found!!!");
+			error.statusCode = 404;
+			throw error;
+		}
+		if (!user.activated) {
+			console.log("i should be here");
+			const error = new Error(
+				"Account is not activated. Please check your email to activate your account!!!"
+			);
+			error.statusCode = 400;
+			throw error;
+		}
+
+		console.log("i cant be");
 		const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
 			expiresIn: "1h",
 		});
@@ -128,7 +141,7 @@ const forgotPasswordService = async (data) => {
 
 		return updateUser;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
@@ -149,7 +162,7 @@ const newResetPasswordTokenService = async (data) => {
 
 		return updateToken;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
@@ -160,10 +173,9 @@ const resetPasswordService = async (token, password) => {
 		try {
 			decodedData = jwt.verify(token, process.env.JWT_SECRET);
 		} catch (err) {
-			return res.status(400).json({
-				status: "Failed",
-				message: "Invalid Activation Token!!!",
-			});
+			const error = new Error("Invalid Reset Password Token!!!");
+			error.statusCode = 400;
+			throw error;
 		}
 
 		const user = await prisma.user.findUnique({
@@ -185,7 +197,7 @@ const resetPasswordService = async (token, password) => {
 
 		return updatePassword;
 	} catch (error) {
-		console.log(error);
+		return error;
 	}
 };
 
